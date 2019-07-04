@@ -39,10 +39,26 @@ Vue.component("product", {
       <span><button v-on:click="addToCart"
                     :disabled="!inStock"
                     :class="{disabledButton: !inStock}"> Add to Cart </button> <button v-on:click="removeFromCart"> Remove From Cart </button> </span>
-      <div class='cart'>
-        <p>Cart {{ cart }}</p>
-      </div>
     </div>
+
+    <div>
+    <h2> Reviews </h2>
+    <p v-if="!reviews.length "> There are no reviews yet. </p>
+
+    <ul>
+      <li v-for='review in reviews'>
+      <p> {{ review.name }} </p>
+      <p> Rating: {{ review.rating }} </p>
+      <p> {{ review.review }} </p>
+       </li>
+    </ul>
+
+
+    </div>
+    <div>
+      <product-review @review-submitted="addReview"></product-review>
+    </div>
+
   </div>
   `,
   data() {
@@ -71,18 +87,24 @@ Vue.component("product", {
           variantQuantity: 0
         }
       ],
-      cart: 0
+      reviews: []
     };
   },
   methods: {
     addToCart() {
-      this.cart += 1;
+      this.$emit("add-to-cart", this.variants[this.selectedVariant].variantId);
     },
     removeFromCart() {
-      this.cart -= 1;
+      this.$emit(
+        "remove-from-cart",
+        this.variants[this.selectedVariant].variantId
+      );
     },
     updateProduct(index) {
       this.selectedVariant = index;
+    },
+    addReview(productReview) {
+      this.reviews.push(productReview);
     }
   },
   //LESSON 7 COMPUTED PROPERTIES NOT CLEAR FROM 2:00 ONWARDS
@@ -105,9 +127,74 @@ Vue.component("product", {
   }
 });
 
+Vue.component("product-review", {
+  template: `
+  <form class="review-form" @submit.prevent="onSubmit">
+  <p>
+    <label for="name">Name:</label>
+    <input id="name" v-model="name" placeholder="name">
+  </p>
+
+  <p>
+    <label for="review">Review:</label>
+    <textarea id="review" v-model="review" required></textarea>
+  </p>
+
+  <p>
+    <label for="rating">Rating:</label>
+    <select id="rating" v-model.number="rating">
+      <option>5</option>
+      <option>4</option>
+      <option>3</option>
+      <option>2</option>
+      <option>1</option>
+    </select>
+  </p>
+
+  <p>
+    <input type="submit" value="Submit">
+  </p>
+
+</form>
+  `,
+  data() {
+    return {
+      name: null,
+      rating: null,
+      review: null
+    };
+  },
+  methods: {
+    onSubmit() {
+      let productReview = {
+        name: this.name,
+        review: this.review,
+        rating: this.rating
+      };
+      this.$emit("review-submitted", productReview);
+      this.name = null;
+      this.review = null;
+      this.rating = null;
+    }
+  }
+});
+
 let app = new Vue({
   el: "#app",
   data: {
-    premium: false
+    premium: false,
+    cart: []
+  },
+  methods: {
+    updateCart(id) {
+      this.cart.push(id);
+    },
+    removeItem(id) {
+      for (var i = this.cart.length - 1; i >= 0; i--) {
+        if (this.cart[i] === id) {
+          this.cart.splice(i, 1);
+        }
+      }
+    }
   }
 });

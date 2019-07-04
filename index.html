@@ -10,7 +10,12 @@
       <div class="nav-bar"></div>
 
       <div id="app">
-        <product :premium="premium" ></product>
+          <div class='cart'>
+              <p>Cart {{ cart.length }}</p>
+            </div>
+
+        <!-- @add-to-cart ties into addToCart method which $emit(add-to-cart) -->
+        <product :premium="premium" @add-to-cart="updateCart" @remove-from-cart="removeItem"></product>
       </div>
 
       <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
